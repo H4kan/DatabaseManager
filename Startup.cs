@@ -55,6 +55,8 @@ namespace bd_lab1
             // Initialise ReactJS.NET. Must be before static files.
             app.UseReact(config =>
             {
+              
+
                 // If you want to use server-side rendering of React components,
                 // add all the necessary JavaScript files here. This includes
                 // your components as well as all of their dependencies.
@@ -83,6 +85,7 @@ namespace bd_lab1
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
             });
+            
         }
     }
 }

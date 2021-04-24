@@ -5,29 +5,234 @@
     font-family: Arial;
     margin: 0;
     padding: 0;
+    box-sizing: border-box;
 }
 
-.listBox h2
+h1 
 {
-    height: 10%;
+    margin-top: 5%;
+    text-align: center;
+}
+
+.listBox h2 {
+    color: rgba(0, 0, 0, 0.2);
 }
 
 .listBox
 {
     width: 90%;
-    height: 40%;
+    height: 50%;
 
     position: absolute;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    border: 2px solid blue;
 
 
 }
-.listBox ul {
-        border: 3px solid black;
-        height: 90%;
-        list-style: none;
+.listBox table {
+        
+        display: block;
+        height: 70%;
+        
+        border: 1px solid gray;
+        font-size: 18px;
 }
 
+table thead {
+
+    display: block;
+    height: 10%;
+    background-color: #111;
+    color: #eee;
+    padding-right: 16px;
+}
+
+table tbody {
+    display: block;
+    height: 90%;
+    overflow: scroll;
+    overflow-x: hidden; 
+}
+
+
+tr
+{
+    margin: 0;
+    display: flex;
+    height: 20%;
+
+}
+
+thead tr 
+{
+    height: 100%;
+}
+
+td {
+    display: block;
+    flex-basis: 15%;
+    position: relative;
+    padding-top: 5px;
+}
+
+td span, th span
+{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+th {
+    display: block;
+    height: 100%;
+    text-align: left;
+    flex-basis: 15%;
+    position: relative;
+}
+
+/* 5 15 15 5 15 10 15 20*/
+
+td:nth-child(1), th:nth-child(1) {
+    flex-basis: 5%;
+    padding-left: 15px;
+    font-weight: bold;
+}
+
+td:nth-child(4), th:nth-child(4) {
+    flex-basis: 10%;
+}
+
+td:nth-child(6), th:nth-child(6) {
+    flex-basis: 10%;
+}
+
+td:nth-child(8), th:nth-child(8) {
+    flex-basis: 20%;
+    
+}
+
+td:nth-child(8) span
+{
+    display: block;
+    width: 100%;
+    text-align: center;
+    height: 100%;
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+tbody tr:nth-child(2n+1)
+{
+    background-color: lightgray;
+}
+
+tbody tr:nth-child(2n)
+{
+    background-color: #eee;
+}
+
+th:nth-child(8) span
+{
+    width: 100%;
+    text-align: center;
+}
+
+footer
+{
+    width: 100%;
+    box-sizing: border-box;
+    border-top: 1px solid gray;
+    position: absolute;
+    bottom: 1%;
+    text-align: right;
+    padding-top: 1%;
+    padding-right: 1%;
+    color: #555;
+}
+
+footer a
+{
+    color: #600;
+}
+
+button {
+    cursor: pointer;
+    border-style: none;
+    border-radius: 10%;
+}
+
+.actionBtns button {
+    height: 60%;
+    width: 25%;
+    cursor: pointer;
+    border-style: none;
+    border-radius: 10%;
+}
+
+.actionBtns button:nth-child(1) {
+
+    background-color: #b0cf44;
+}
+
+.actionBtns button:nth-child(2) {
+    background-color: #d9534f;
+    color: #eee;
+}
+
+.topBar
+{
+    display: flex;
+    height: 10%;
+    justify-content: space-between;
+}
+
+.topBar h2
+{
+    width: 85%;
+}
+
+.topBar div {
+    width: 10%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+button {
+    background-color: royalblue;
+    color: #eee;
+}
+
+.topBar button {
+    flex-basis: 40%;
+    height: 70%;
+}
+
+.bottomBar
+{
+    display: flex;
+    height: 15%;
+    align-items: flex-end;
+}
+
+.bottomBar button
+{
+    display: block;
+    height: 55%;
+    width: 7%;
+    margin-left: 2%;
+}
+
+.filterForm
+{
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 30%;
+    height: 50%;
+    background-color: gray;
+    z-index: 2;
+}
