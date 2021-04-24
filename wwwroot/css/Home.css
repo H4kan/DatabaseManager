@@ -232,7 +232,51 @@ button {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 30%;
-    height: 50%;
-    background-color: gray;
+    height: 60%;
+    background-color: #ccc;
     z-index: 2;
+    border: 2px solid black;
+    padding: 2%;
+}
+
+button:hover
+{
+    transform: scale(1.1, 1.1);
+}
+
+.filterForm label
+{
+    display: block;
+    padding: 10px;
+}
+
+
+
+.filterForm h3
+{
+    text-align: center;
+    margin: 5%;
+    font-size: 25px;
+}
+
+.filterForm input
+{
+    padding: 7px;
+    width: 30%;
+    font-size: 15px;
+    margin-right: 2%;
+}
+
+.filterForm div
+{
+    position: absolute;
+    top: 95%;
+    right: 0%;
+    transform: translate(-20%, -50%);
+}
+
+.filterForm button
+{
+    padding: 12px;
+    margin: 5px;
 }

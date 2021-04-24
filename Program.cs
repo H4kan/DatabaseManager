@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace bd_lab1
+namespace DatabaseManager
 {
     public class Program
     {

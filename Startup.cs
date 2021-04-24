@@ -13,7 +13,7 @@ using JavaScriptEngineSwitcher.V8;
 using JavaScriptEngineSwitcher.Extensions.MsDependencyInjection;
 using React.AspNet;
 
-namespace bd_lab1
+namespace DatabaseManager
 {
     public class Startup
     {

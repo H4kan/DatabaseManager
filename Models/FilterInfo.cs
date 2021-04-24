@@ -5,20 +5,17 @@ using System.Threading.Tasks;
 
 namespace DatabaseManager.Models
 {
-    public class Person
+    public class FilterInfo
     {
-        public int PersonId { get; set; }
-
+        public string Action { get; set; }
         public string Name { get; set; }
 
         public string Surname { get; set; }
 
-        public int CarId { get; set; }
+        public string[] Date { get; set; }
 
-        public DateTime Date { get; set; }
+        public string[] Capacity { get; set; }
+        public string[] Cost { get; set; }
 
-        public float Capacity { get; set; }
-
-        public double Cost { get; set; }
     }
 }

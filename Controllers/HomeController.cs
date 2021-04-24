@@ -3,14 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using bd_lab1.Models;
+using DatabaseManager.Models;
 using System.Data.SqlClient;
 
-namespace bd_lab1.Controllers
+namespace DatabaseManager.Controllers
 {
     
     public class HomeController : Controller
     {
+
+        private static string selectStr = "SELECT o.*, pojemnosc, cena FROM OSOBY o JOIN SAMOCHOD s ON s.samochod_id=o.samochod_id";
         private static readonly IList<Person> persons;
 
         static HomeController()
@@ -22,7 +24,7 @@ namespace bd_lab1.Controllers
             {
                 using (SqlConnection conn = new SqlConnection(connString))
                 {
-                    SqlCommand cmd = new SqlCommand("SELECT * FROM OSOBY", conn);
+                    SqlCommand cmd = new SqlCommand(selectStr, conn);
                     conn.Open();
                     
 
@@ -32,6 +34,7 @@ namespace bd_lab1.Controllers
                     {
                         while (dr.Read())
                         {
+                            
                             persons.Add(
                                 new Person
                                 {
@@ -39,7 +42,9 @@ namespace bd_lab1.Controllers
                                     Name = dr.GetString(1),
                                     Surname = dr.GetString(2),
                                     CarId = dr.GetInt32(3),
-                                    Date = dr.GetDateTime(4)
+                                    Date = dr.GetDateTime(4),
+                                    Capacity = (float)dr.GetDecimal(5),
+                                    Cost = dr.GetSqlMoney(6).ToDouble()
                                 }) ;
                         }
                     }
@@ -49,9 +54,18 @@ namespace bd_lab1.Controllers
             catch (Exception ex)
             {
                 //display error message
-                persons[0].Name = ex.Message;
+                Console.WriteLine(ex.Message);
             }
         }
+        [Route(Info.API_ENDPOINT)]
+        [HttpPost]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        public ActionResult Filter([FromBody] FilterInfo info)
+        {
+            System.Diagnostics.Debug.WriteLine(info.ToString());
+            return Json(info);
+        }
+
 
         [Route(Info.API_ENDPOINT)]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
