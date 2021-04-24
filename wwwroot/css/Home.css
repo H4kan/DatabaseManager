@@ -1,0 +1,33 @@
+﻿
+
+* 
+{
+    font-family: Arial;
+    margin: 0;
+    padding: 0;
+}
+
+.listBox h2
+{
+    height: 10%;
+}
+
+.listBox
+{
+    width: 90%;
+    height: 40%;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border: 2px solid blue;
+
+
+}
+.listBox ul {
+        border: 3px solid black;
+        height: 90%;
+        list-style: none;
+}
+

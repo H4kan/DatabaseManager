@@ -1,0 +1,20 @@
+﻿@{
+    Layout = null;
+}
+<html>
+<head>
+    <title>Database Manager</title>
+    <link rel="stylesheet" href="@Url.Content("~/css/Home.css")">
+</head>
+<body>
+    <div id="content"></div>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/16.13.0/umd/react.development.js"></script>
+    <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/16.13.0/umd/react-dom.development.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/remarkable/1.7.1/remarkable.min.js"></script>
+    <script type="text/javascript">
+        var ENDPOINT = '@Url.Action(Info.API_ENDPOINT)';
+        var DB_NAME = '@Info.DATABASE_NAME';
+    </script>
+    <script src="@Url.Content("~/js/Home.jsx")"></script>
+</body>
+</html>
