@@ -16,56 +16,63 @@ namespace DatabaseManager.Controllers
         private static string selectStr = "SELECT o.*, pojemnosc, cena FROM OSOBY o JOIN SAMOCHOD s ON s.samochod_id=o.samochod_id";
         private static string lastSelect = selectStr;
         private static readonly IList<Person> persons;
-        private static SqlConnection conn;
+        private static string connString;
 
         static HomeController()
         {
             persons = new List<Person>();
 
             
-            string connString = string.Format("Server=.;Database={0};Trusted_Connection=True;", Info.DATABASE_NAME);
-            try
-            {
-                conn = new SqlConnection(connString);
-                conn.Open();
+            connString = string.Format("Server=.;Database={0};Trusted_Connection=True;", Info.DATABASE_NAME);
 
-                updatePersons(selectStr);
-                
-            }
-            catch (Exception ex)
-            {
-                //display error message
-                Console.WriteLine(ex.Message);
-            }
+
+            updatePersons(selectStr);
         }
 
 
-        public static void updatePersons(string cmdStr)
+        public static bool updatePersons(string cmdStr)
         {
-            persons.Clear();
-            SqlCommand cmd = new SqlCommand(cmdStr, conn);
-
-            SqlDataReader dr = cmd.ExecuteReader();
-
-            if (dr.HasRows)
+            bool res = false;
+            try
             {
-                while (dr.Read())
+                using (var conn = new SqlConnection(connString))
                 {
+                    res = true;
+                    conn.Open();
 
-                    persons.Add(
-                        new Person
+                    persons.Clear();
+                    SqlCommand cmd = new SqlCommand(cmdStr, conn);
+
+                    SqlDataReader dr = cmd.ExecuteReader();
+
+                    if (dr.HasRows)
+                    {
+                        
+                        while (dr.Read())
                         {
-                            PersonId = dr.GetInt32(0),
-                            Name = dr.GetString(1),
-                            Surname = dr.GetString(2),
-                            CarId = dr.GetInt32(3),
-                            Date = dr.GetDateTime(4),
-                            Capacity = (float)dr.GetDecimal(5),
-                            Cost = dr.GetSqlMoney(6).ToDouble()
-                        });
+
+                            persons.Add(
+                                new Person
+                                {
+                                    PersonId = dr.GetInt32(0),
+                                    Name = dr.GetString(1),
+                                    Surname = dr.GetString(2),
+                                    CarId = dr.GetInt32(3),
+                                    Date = dr.GetDateTime(4),
+                                    Capacity = (float)dr.GetDecimal(5),
+                                    Cost = dr.GetSqlMoney(6).ToDouble()
+                                });
+                        }
+                    }
+                    dr.Close();
+                    
                 }
             }
-            dr.Close();
+            catch
+            {
+                res = false;
+            }
+            return res;
         }
 
         public bool isFilterClear(FilterInfo info)
@@ -140,7 +147,8 @@ namespace DatabaseManager.Controllers
                 }
                 
             }
-            updatePersons(query.ToString());
+            var empty = new List<Person>();
+            if (updatePersons(query.ToString()) == false) return Json(empty);
             lastSelect = query.ToString();
             return Json(persons);
         }
@@ -157,10 +165,35 @@ namespace DatabaseManager.Controllers
 
             query.Remove(query.Length - 2, 2);
 
-            query.Append(" END TRY BEGIN CATCH ROLLBACK TRANSACTION END CATCH COMMIT TRANSACTION");
+            query.Append(" COMMIT TRANSACTION END TRY BEGIN CATCH ROLLBACK TRANSACTION END CATCH ");
 
-            updatePersons(query.ToString());
-            updatePersons(lastSelect);
+            var empty = new List<Person>();
+            if (updatePersons(query.ToString()) == false || updatePersons(lastSelect) == false) return Json(empty);
+            
+            return Json(persons);
+        }
+
+        [Route(Info.API_ENDPOINT)]
+        [HttpPatch]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        public ActionResult Patch([FromBody] EditInfo info)
+        {
+            StringBuilder query = new StringBuilder("BEGIN TRANSACTION BEGIN TRY UPDATE OSOBY SET ");
+
+            var date = Convert.ToDateTime(info.Date).Date;
+
+            query.Append(string.Format("imie='{0}', ", info.Name));
+            query.Append(string.Format("nazwisko='{0}', ", info.Surname));
+            query.Append(string.Format("data_prod='{0}-{1}-{2}', ", date.Year, date.Month, date.Day));
+            query.Append(string.Format("samochod_id={0} ", info.CarId));
+
+            query.Append(string.Format("WHERE osoba_id={0}", info.PersonId));
+
+
+            query.Append(" END TRY BEGIN CATCH ROLLBACK TRANSACTION THROW END CATCH COMMIT TRANSACTION");
+
+            var empty = new List<Person>();
+            if (updatePersons(query.ToString()) == false || updatePersons(lastSelect) == false) return Json(empty);
             return Json(persons);
         }
 

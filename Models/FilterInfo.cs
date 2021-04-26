@@ -7,7 +7,6 @@ namespace DatabaseManager.Models
 {
     public class FilterInfo
     {
-        public string Action { get; set; }
         public string Name { get; set; }
 
         public string Surname { get; set; }

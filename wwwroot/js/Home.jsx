@@ -109,7 +109,7 @@ class FilterDialog extends React.Component
 
 const EditButton = (props) =>
 {
-    return <button disabled={props.btn_dis} onClick={() => { props.updateCurrEdit(props.ind); }}>Edit</button>;
+    return <button disabled={props.btn_dis} onClick={() => { props.updateCurrEdit(props.ind, props.elem); }}>Edit</button>;
 }
 
 const DeleteButton = (props) =>
@@ -138,11 +138,18 @@ const ConfirmDelButton = (props) => {
 }
 
 const ConfirmEditButton = (props) => {
-    return <button>Confirm</button>;
+    return <button onClick={() => {
+        let el = props.elem;
+        let editHandler = props.editHandler;
+        if (el.name != editHandler.name || el.surname != editHandler.surname
+            || el.carId.toString() != editHandler.carId || el.date != editHandler.date)
+            props.editRequest(props.editHandler);
+        props.updateCurrEdit(-1, null);
+    }}>Confirm</button>;
 }
 
 const CancelEditButton = (props) => {
-    return <button onClick={() => { props.updateCurrEdit(-1); }}>Cancel</button>;
+    return <button onClick={() => { props.updateCurrEdit(-1, null); }}>Cancel</button>;
 }
 
 
@@ -156,6 +163,14 @@ class ListBox extends React.Component
         {
             markedForDel: [],
             currEdit: -1
+        };
+
+        this.editHandler = {
+            personId: "",
+            name: "",
+            surname: "",
+            carId: "",
+            date: ""
         };
     }
 
@@ -176,10 +191,31 @@ class ListBox extends React.Component
         }
     }
 
-    updateCurrEdit = (ind) => {
-        this.setState({
-            currEdit: ind
-        });
+    updateCurrEdit = (ind, el) => {
+            this.setState({
+                currEdit: ind
+            });
+        if (ind >= 0) {
+            const date = new Date(el.date);
+            const days = date.getDate() > 10 ? date.getDate() : "0" + date.getDate();
+            const months = date.getMonth() + 1 > 10 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1);
+            this.editHandler = {
+                personId: el.personId.toString(),
+                name: el.name,
+                surname: el.surname,
+                carId: el.carId.toString(),
+                date: `${date.getFullYear()}-${months}-${days}`
+            };
+        }
+            
+        else 
+            this.editHandler = {
+                personId: "",
+                name: "",
+                surname: "",
+                carId: "",
+                date: ""
+            };
     }
 
     clearMarkDel = () => {
@@ -202,22 +238,27 @@ class ListBox extends React.Component
                     <td><span>{days}.{months}.{date.getFullYear()}</span></td>
                     <td><span>{el.capacity.toFixed(2)}</span></td>
                     <td><span>${el.cost}</span></td>
-                    <td><span className="actionBtns"><EditButton btn_dis={this.props.btn_dis} ind={ind} updateCurrEdit={this.updateCurrEdit} /> <DeleteButton
+                    <td><span className="actionBtns"><EditButton btn_dis={this.props.btn_dis} ind={ind} updateCurrEdit={this.updateCurrEdit} elem={el} /> <DeleteButton
                         btn_dis={this.props.btn_dis} id={el.personId} addMarkDel={this.addMarkDel}
                         marked={this.state.markedForDel.indexOf(el.personId.toString()) >= 0}
                     /></span></td>
                 </tr>
             }
-            else return <tr key={el.personId}>
-                <td><span>{el.personId}</span></td>
-                <td><input type="text" defaultValue={el.name} /></td>
-                <td><input type="text" defaultValue={el.surname} /></td>
-                <td><input type="number" defaultValue={el.carId} /></td>
-                <td><input type="date" defaultValue={`${date.getFullYear()}-${months}-${days}`} /></td>
-                <td><span>{el.capacity.toFixed(2)}</span></td>
-                <td><span>${el.cost}</span></td>
-                <td><span className="actionBtns"><ConfirmEditButton /> <CancelEditButton updateCurrEdit={this.updateCurrEdit} /></span></td>
-            </tr>
+            else {
+     
+                return <tr key={el.personId}>
+                    <td><span>{el.personId}</span></td>
+                    <td><input type="text" defaultValue={this.editHandler.name} onChange={e => this.editHandler.name = e.target.value} /></td>
+                    <td><input type="text" defaultValue={this.editHandler.surname} onChange={e => this.editHandler.surname = e.target.value} /></td>
+                    <td><input type="number" defaultValue={this.editHandler.carId} onChange={e => this.editHandler.carId = e.target.value} /></td>
+                    <td><input type="date" defaultValue={this.editHandler.date} onChange={e => this.editHandler.date = e.target.value} /></td>
+                    <td><span>{el.capacity.toFixed(2)}</span></td>
+                    <td><span>${el.cost}</span></td>
+                    <td><span className="actionBtns">
+                        <ConfirmEditButton editHandler={this.editHandler} updateCurrEdit={this.updateCurrEdit} editRequest={this.props.editRequest} elem={el}/>
+                        <CancelEditButton updateCurrEdit={this.updateCurrEdit} /></span></td>
+                </tr>
+            }
 
             
         }
@@ -269,7 +310,6 @@ class Home extends React.Component {
             filterDialogVisible: false,
         }
         this.filterHandler = {
-            action: "FILTER",
             name: "",
             surname: "",
             date: ["", ""],
@@ -297,9 +337,12 @@ class Home extends React.Component {
                 body: JSON.stringify(this.filterHandler)
             })
             .then(res => res.json())
-            .then(res => this.setState({
-                records: res
-            }));
+            .then(res => {
+                if (this.state.records.length > 0 && res.length == 0) alert("Error ocurred during operation");
+                else this.setState({
+                    records: res
+                })
+            });
     }
 
     deleteRequest = (ids) => {
@@ -312,16 +355,18 @@ class Home extends React.Component {
                 body: JSON.stringify({ personId: ids})
             })
             .then(res => res.json())
-            .then(res => this.setState({
-                records: res
-            }));
+            .then(res => {
+                if (this.state.records.length > 0 && res.length == 0) alert("Error ocurred during operation");
+                else this.setState({
+                    records: res
+                })
+            });
         
     }
 
     sendFilterRequest = (name, surname, date, capacity, cost, sortOrd) =>
     {
         this.filterHandler = {
-            action: "FILTER",
             name,
             surname,
             date,
@@ -339,9 +384,30 @@ class Home extends React.Component {
                 body: JSON.stringify(this.filterHandler)
             })
             .then(res => res.json())
-            .then(res => this.setState({
-                records: res
-            }));
+            .then(res => {
+                if (this.state.records.length > 0 && res.length == 0) alert("Error ocurred during operation");
+                else this.setState({
+                    records: res
+                })
+            });
+    }
+
+    sendEditRequest = (editHandler) =>
+    {
+        fetch(this.props.url, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(editHandler)
+        })
+        .then(res => res.json())
+            .then(res => {
+                if (this.state.records.length > 0 && res.length == 0) alert("Error ocurred during operation");
+                else this.setState({
+                    records: res
+                })
+            });
     }
 
     getDatabase = () => {
@@ -360,7 +426,7 @@ class Home extends React.Component {
         return (
             <div className="home">
                 <h1>Database Manager</h1>
-                <ListBox records={this.state.records} dbName={this.props.dbName} filterDialog={this.switchfilterDialog} btn_dis={this.state.filterDialogVisible} refreshRequest={this.refreshRequest} deleteRequest={this.deleteRequest} />
+                <ListBox records={this.state.records} dbName={this.props.dbName} filterDialog={this.switchfilterDialog} btn_dis={this.state.filterDialogVisible} refreshRequest={this.refreshRequest} deleteRequest={this.deleteRequest} editRequest={this.sendEditRequest} />
                 <footer>Created by <a href="https://github.com/H4kan">H4kan</a>, 2021</footer>
                 {this.state.filterDialogVisible ? <FilterDialog switchDialog={this.switchfilterDialog} sendRequest={this.sendFilterRequest} filterHandler={this.filterHandler} /> : null}
             </div>
