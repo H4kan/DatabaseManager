@@ -17,5 +17,7 @@ namespace DatabaseManager.Models
         public string[] Capacity { get; set; }
         public string[] Cost { get; set; }
 
+        public string SortOrd { get; set; }
+
     }
 }
