@@ -49,18 +49,26 @@ namespace DatabaseManager.Controllers
                     {
                         
                         while (dr.Read())
-                        {
 
+                        {
+                            var PersonId = dr.GetInt32(0);
+                            var Name = dr.GetString(1);
+                            var Surname = dr.GetString(2);
+                            var CarId = dr.GetInt32(3);
+                            var Date = "";
+                            if (!dr.IsDBNull(4)) Date = dr.GetDateTime(4).ToShortDateString();
+                            var Capacity = (float)dr.GetDecimal(5);
+                            var Cost = dr.GetSqlMoney(6).ToDouble();
                             persons.Add(
                                 new Person
                                 {
-                                    PersonId = dr.GetInt32(0),
-                                    Name = dr.GetString(1),
-                                    Surname = dr.GetString(2),
-                                    CarId = dr.GetInt32(3),
-                                    Date = dr.GetDateTime(4),
-                                    Capacity = (float)dr.GetDecimal(5),
-                                    Cost = dr.GetSqlMoney(6).ToDouble()
+                                    PersonId = PersonId,
+                                    Name = Name,
+                                    Surname = Surname,
+                                    CarId = CarId,
+                                    Date = Date,
+                                    Capacity = Capacity,
+                                    Cost = Cost
                                 });
                         }
                     }
@@ -68,8 +76,9 @@ namespace DatabaseManager.Controllers
                     
                 }
             }
-            catch
+            catch(Exception ex)
             {
+                Console.WriteLine(ex.Message);
                 res = false;
             }
             return res;
@@ -180,11 +189,19 @@ namespace DatabaseManager.Controllers
         {
             StringBuilder query = new StringBuilder("BEGIN TRANSACTION BEGIN TRY UPDATE OSOBY SET ");
 
-            var date = Convert.ToDateTime(info.Date).Date;
-
+                
             query.Append(string.Format("imie='{0}', ", info.Name));
             query.Append(string.Format("nazwisko='{0}', ", info.Surname));
-            query.Append(string.Format("data_prod='{0}-{1}-{2}', ", date.Year, date.Month, date.Day));
+            if (info.Date.Length > 0)
+            {
+                var date = Convert.ToDateTime(info.Date).Date;
+                query.Append(string.Format("data_prod='{0}-{1}-{2}', ", date.Year, date.Month, date.Day));
+            }
+            else
+            {
+                query.Append(string.Format("data_prod=NULL, "));
+            }
+            
             query.Append(string.Format("samochod_id={0} ", info.CarId));
 
             query.Append(string.Format("WHERE osoba_id={0}", info.PersonId));
@@ -197,6 +214,40 @@ namespace DatabaseManager.Controllers
             return Json(persons);
         }
 
+        [Route(Info.API_ENDPOINT)]
+        [HttpPut]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        public ActionResult Put([FromBody] EditInfo info)
+        {
+            StringBuilder query = new StringBuilder("BEGIN TRANSACTION BEGIN TRY ");
+            if (info.Date.Length > 0)
+            {
+                var date = Convert.ToDateTime(info.Date).Date;
+                query.Append("INSERT INTO OSOBY (imie, nazwisko, samochod_id, data_prod) ");
+                query.Append(string.Format("VALUES('{0}', '{1}', {2}, '{3}-{4}-{5}')", info.Name, info.Surname,
+                    info.CarId, date.Year, date.Month, date.Day));
+            }
+            else
+            {
+                query.Append("INSERT INTO OSOBY (imie, nazwisko, samochod_id) ");
+                query.Append(string.Format("VALUES('{0}', '{1}', {2})", info.Name, info.Surname,
+                    info.CarId));
+            }
+            query.Append(" END TRY BEGIN CATCH ROLLBACK TRANSACTION THROW END CATCH COMMIT TRANSACTION");
+
+            var empty = new List<Person>();
+            if (updatePersons(query.ToString()) == false || updatePersons(lastSelect) == false) return Json(empty);
+            return Json(persons);
+        }
+
+        [Route(Info.API_ENDPOINT)]
+        [HttpOptions]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        public ActionResult Post([FromBody] LoginInfo info)
+        {
+            
+             return Json(persons);
+        }
 
         [Route(Info.API_ENDPOINT)]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]

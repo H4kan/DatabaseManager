@@ -314,3 +314,63 @@ tbody input {
 td:nth-child(4) input {
     width: 60%;
 }
+
+.actionBtns :disabled
+{
+     opacity: 0.4;
+}
+
+div.loginBox {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: #111;
+    width: 25%;
+    height: 55%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    align-items: center;
+    padding: 5% 0 5% 0;
+}
+
+div.loginBox>* 
+{
+    display: block;
+    width: 80%;
+}
+
+div.loginBox input
+{
+    padding: 10px;
+    margin: 10px;
+}
+
+.loginBox span
+{
+    color: #eee;
+    display: block;
+}
+
+.loginBox h3
+{
+    text-align: center;
+    color: #eee;
+    padding-bottom: 30px;
+}
+
+.loginBox button
+{
+    position: absolute;
+    bottom: 5%;
+    right: 5%;
+    width: 20%;
+    padding: 10px;
+}
+
+
+.loginBox .trusted>*
+{
+    display: inline;
+}

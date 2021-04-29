@@ -15,7 +15,7 @@ namespace DatabaseManager.Models
 
         public int CarId { get; set; }
 
-        public DateTime Date { get; set; }
+        public string Date { get; set; }
 
         public float Capacity { get; set; }
 

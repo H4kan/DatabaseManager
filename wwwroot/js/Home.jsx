@@ -1,4 +1,28 @@
 ﻿
+class LoginBox extends React.Component
+{
+    constructor(props) {
+        super(props);
+        this.state = {
+            serverName: ".",
+            trusted: true,
+            login: "",
+            password: ""
+        }
+    }
+
+
+    render() {
+        return <div className="loginBox">
+            <h3> Sign into database</h3>
+            <div><span>Server name:</span> <input defaultValue="." type="text" onChange={(e) => { this.setState({ serverName: e.target.value }); }} /></div>
+            <div className="trusted"><input type="checkbox" defaultChecked onChange={(e) => { this.setState({ trusted: e.target.checked }); }} /><span>Trusted connection</span></div>
+            <div><span>Login:</span> <input type="text" onChange={(e) => { this.setState({ login: e.target.value }); }} disabled={this.state.trusted} /></div>
+            <div><span>Password:</span> <input type="text" onChange={(e) => { this.setState({ password: e.target.value }); }} disabled={this.state.trusted} /></div>
+            <button disabled={this.state.serverName.length == 0 || (!this.state.trusted && (this.state.login.length == 0 || this.state.password.length == 0))} onClick={() => this.props.sendLogin(this.state)}>Sign in</button>
+            </div>
+    }
+}
 
 class FilterDialog extends React.Component
 {
@@ -130,7 +154,7 @@ const RefreshButton = (props) =>
 
 const AddButton = (props) =>
 {
-    return <button disabled={props.btn_dis}>Add</button>;
+    return <button disabled={props.btn_dis} onClick={props.addNewEl}>Add</button>;
 }
 
 const ConfirmDelButton = (props) => {
@@ -138,20 +162,33 @@ const ConfirmDelButton = (props) => {
 }
 
 const ConfirmEditButton = (props) => {
+    let el = props.elem;
+    let editHandler = props.editHandler;
+    let isDisabled = (editHandler.name.length == 0 || editHandler.surname.length == 0 || editHandler.carId.length == 0);
     return <button onClick={() => {
-        let el = props.elem;
-        let editHandler = props.editHandler;
         if (el.name != editHandler.name || el.surname != editHandler.surname
             || el.carId.toString() != editHandler.carId || el.date != editHandler.date)
             props.editRequest(props.editHandler);
         props.updateCurrEdit(-1, null);
-    }}>Confirm</button>;
+    }}
+        disabled={isDisabled}
+    >Confirm</button>;
 }
 
-const CancelEditButton = (props) => {
+const CancelButton = (props) => {
     return <button onClick={() => { props.updateCurrEdit(-1, null); }}>Cancel</button>;
 }
 
+const ConfirmAddButton = (props) => {
+    let editHandler = props.editHandler;
+    let isDisabled = (editHandler.name.length == 0 || editHandler.surname.length == 0 || editHandler.carId.length == 0);
+    return <button onClick={() => {
+        props.addRequest(props.editHandler);
+        props.updateCurrEdit(-1, null);
+    }}
+        disabled={isDisabled}
+    >Confirm</button>;
+}
 
 class ListBox extends React.Component
 {
@@ -162,16 +199,17 @@ class ListBox extends React.Component
         this.state =
         {
             markedForDel: [],
-            currEdit: -1
+            currEdit: -1,
+            newElementEdit: false,
+            editHandler: {
+                personId: "",
+                name: "",
+                surname: "",
+                carId: "",
+                date: ""
+            }
         };
 
-        this.editHandler = {
-            personId: "",
-            name: "",
-            surname: "",
-            carId: "",
-            date: ""
-        };
     }
 
     addMarkDel = (id) => {
@@ -193,29 +231,40 @@ class ListBox extends React.Component
 
     updateCurrEdit = (ind, el) => {
             this.setState({
-                currEdit: ind
+                currEdit: ind,
+                newElementEdit: false
             });
         if (ind >= 0) {
-            const date = new Date(el.date);
-            const days = date.getDate() > 10 ? date.getDate() : "0" + date.getDate();
-            const months = date.getMonth() + 1 > 10 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1);
-            this.editHandler = {
-                personId: el.personId.toString(),
-                name: el.name,
-                surname: el.surname,
-                carId: el.carId.toString(),
-                date: `${date.getFullYear()}-${months}-${days}`
-            };
+            let dateStr = "";
+            if (el.date.length > 0) {
+                const dateArr = el.date.split('.');
+                const date = new Date(dateArr[2], dateArr[1], dateArr[0]);
+                const days = date.getDate() > 10 ? date.getDate() : "0" + date.getDate();
+                const months = date.getMonth() > 10 ? date.getMonth() : "0" + (date.getMonth());
+                dateStr = `${date.getFullYear()}-${months}-${days}`;
+            }
+            
+            this.setState({
+                editHandler: {
+                    personId: el.personId.toString(),
+                    name: el.name,
+                    surname: el.surname,
+                    carId: el.carId.toString(),
+                    date: dateStr
+                }
+            });
         }
             
         else 
-            this.editHandler = {
-                personId: "",
-                name: "",
-                surname: "",
-                carId: "",
-                date: ""
-            };
+            this.setState({
+                editHandler: {
+                    personId: "",
+                    name: "",
+                    surname: "",
+                    carId: "",
+                    date: ""
+                }
+            });
     }
 
     clearMarkDel = () => {
@@ -224,18 +273,33 @@ class ListBox extends React.Component
         })
     }
 
+    addNewEl = () => {
+        
+        this.setState(
+            {
+                currEdit: -1,
+                newElementEdit: true
+            })
+    }
+
     render() {
         this.trElems = this.props.records.map((el, ind) => {
-            const date = new Date(el.date);
-            const days = date.getDate() > 10 ? date.getDate() : "0" + date.getDate();
-            const months = date.getMonth() + 1 > 10 ? date.getMonth() + 1 : "0" + (date.getMonth() + 1);
+            let dateStr = "";
+            if (el.date.length > 0) {
+                const dateArr = el.date.split('.');
+                const date = new Date(dateArr[2], dateArr[1], dateArr[0]);
+                const days = date.getDate() > 10 ? date.getDate() : "0" + date.getDate();
+                const months = date.getMonth() > 10 ? date.getMonth() : "0" + (date.getMonth());
+                dateStr = `${days}.${months}.${date.getFullYear()}`;
+            }
+     
             if (this.state.currEdit != ind) {
                 return <tr key={el.personId}>
                     <td><span>{el.personId}</span></td>
                     <td><span>{el.name}</span></td>
                     <td><span>{el.surname}</span></td>
                     <td><span>{el.carId}</span></td>
-                    <td><span>{days}.{months}.{date.getFullYear()}</span></td>
+                    <td><span>{dateStr}</span></td>
                     <td><span>{el.capacity.toFixed(2)}</span></td>
                     <td><span>${el.cost}</span></td>
                     <td><span className="actionBtns"><EditButton btn_dis={this.props.btn_dis} ind={ind} updateCurrEdit={this.updateCurrEdit} elem={el} /> <DeleteButton
@@ -248,21 +312,37 @@ class ListBox extends React.Component
      
                 return <tr key={el.personId}>
                     <td><span>{el.personId}</span></td>
-                    <td><input type="text" defaultValue={this.editHandler.name} onChange={e => this.editHandler.name = e.target.value} /></td>
-                    <td><input type="text" defaultValue={this.editHandler.surname} onChange={e => this.editHandler.surname = e.target.value} /></td>
-                    <td><input type="number" defaultValue={this.editHandler.carId} onChange={e => this.editHandler.carId = e.target.value} /></td>
-                    <td><input type="date" defaultValue={this.editHandler.date} onChange={e => this.editHandler.date = e.target.value} /></td>
+                    <td><input type="text" defaultValue={this.state.editHandler.name} onChange={e => this.setState({ editHandler: { ...this.state.editHandler, name: e.target.value } })} /></td>
+                    <td><input type="text" defaultValue={this.state.editHandler.surname} onChange={e => this.setState({ editHandler: { ...this.state.editHandler, surname: e.target.value } })}  /></td>
+                    <td><input type="number" defaultValue={this.state.editHandler.carId} onChange={e => this.setState({ editHandler: { ...this.state.editHandler, carId: e.target.value } })}  /></td>
+                    <td><input type="date" defaultValue={this.state.editHandler.date} onChange={e => this.setState({ editHandler: { ...this.state.editHandler, date: e.target.value } })} /></td>
                     <td><span>{el.capacity.toFixed(2)}</span></td>
                     <td><span>${el.cost}</span></td>
                     <td><span className="actionBtns">
-                        <ConfirmEditButton editHandler={this.editHandler} updateCurrEdit={this.updateCurrEdit} editRequest={this.props.editRequest} elem={el}/>
-                        <CancelEditButton updateCurrEdit={this.updateCurrEdit} /></span></td>
+                        <ConfirmEditButton editHandler={this.state.editHandler} updateCurrEdit={this.updateCurrEdit} editRequest={this.props.editRequest} elem={el}/>
+                        <CancelButton updateCurrEdit={this.updateCurrEdit} /></span></td>
                 </tr>
             }
-
+           
             
         }
         );
+        if (this.state.newElementEdit) {
+            const newElem = <tr key={0}>
+                <td><span>0</span></td>
+                <td><input type="text" onChange={e => this.setState({ editHandler: { ...this.state.editHandler, name: e.target.value } })} /></td>
+                <td><input type="text" onChange={e => this.setState({ editHandler: { ...this.state.editHandler, surname: e.target.value } })} /></td>
+                <td><input type="number" onChange={e => this.setState({ editHandler: { ...this.state.editHandler, carId: e.target.value } })} /></td>
+                <td><input type="date" onChange={e => this.setState({ editHandler: { ...this.state.editHandler, date: e.target.value } })} /></td>
+                <td><span>0</span></td>
+                <td><span>0</span></td>
+                <td><span className="actionBtns">
+                    <ConfirmAddButton editHandler={this.state.editHandler} addRequest={this.props.addRequest} updateCurrEdit={this.updateCurrEdit} />
+                    <CancelButton updateCurrEdit={this.updateCurrEdit} /></span></td>
+            </tr>
+            this.trElems.unshift(newElem);
+
+        }
         return (
             <div className="listBox">
                 <div className="topBar">
@@ -290,7 +370,7 @@ class ListBox extends React.Component
                     </tbody>
                 </table>
                 <div className="bottomBar">
-                    <AddButton btn_dis={this.props.btn_dis} />
+                    <AddButton btn_dis={this.props.btn_dis} addNewEl={this.addNewEl} />
                     {this.state.markedForDel.length > 0 ? < ConfirmDelButton btn_dis={this.props.btn_dis} deleteRequest={this.props.deleteRequest} ids={this.state.markedForDel} clear={this.clearMarkDel} /> : null}
                 </div>
             </div>
@@ -300,7 +380,7 @@ class ListBox extends React.Component
    
 
 
-class Home extends React.Component {
+class Main extends React.Component {
 
 
     constructor(props) {
@@ -410,6 +490,24 @@ class Home extends React.Component {
             });
     }
 
+    sendAddRequest = (editHandler) => {
+
+        fetch(this.props.url, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(editHandler)
+        })
+            .then(res => res.json())
+            .then(res => {
+                if (this.state.records.length > 0 && res.length == 0) alert("Error ocurred during operation");
+                else this.setState({
+                    records: res
+                })
+            });
+    }
+
     getDatabase = () => {
         fetch(this.props.url)
             .then(res => res.json())
@@ -426,11 +524,41 @@ class Home extends React.Component {
         return (
             <div className="home">
                 <h1>Database Manager</h1>
-                <ListBox records={this.state.records} dbName={this.props.dbName} filterDialog={this.switchfilterDialog} btn_dis={this.state.filterDialogVisible} refreshRequest={this.refreshRequest} deleteRequest={this.deleteRequest} editRequest={this.sendEditRequest} />
+                <ListBox records={this.state.records} dbName={this.props.dbName} filterDialog={this.switchfilterDialog} btn_dis={this.state.filterDialogVisible} refreshRequest={this.refreshRequest} deleteRequest={this.deleteRequest} editRequest={this.sendEditRequest} addRequest={this.sendAddRequest} />
                 <footer>Created by <a href="https://github.com/H4kan">H4kan</a>, 2021</footer>
                 {this.state.filterDialogVisible ? <FilterDialog switchDialog={this.switchfilterDialog} sendRequest={this.sendFilterRequest} filterHandler={this.filterHandler} /> : null}
             </div>
         );
+    }
+}
+
+class Home extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            logged: false,
+            dbName: ""
+        }
+    }
+
+    sendLoginRequest = (loginHandler) => {
+        console.log(loginHandler);
+        fetch(this.props.url,
+            {
+                method: 'OPTIONS',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(loginHandler)
+            })
+            //.then(res => res.json())
+            //.then(res => console.log(res));
+    }
+
+    render() {
+        return <div className="main">
+            {this.state.logged ? <Main url={this.props.url} dbName={this.state.dbName} /> : <LoginBox sendLogin={this.sendLoginRequest} />}
+            </div>
     }
 }
 
