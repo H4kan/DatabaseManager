@@ -17,5 +17,7 @@ namespace DatabaseManager.Models
         public string CarId { get; set; }
 
         public string Date { get; set; }
+
+        public bool CarRequest { get; set; }
     }
 }

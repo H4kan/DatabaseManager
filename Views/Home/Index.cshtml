@@ -15,9 +15,15 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
 
     <script type="text/javascript">
-        var ENDPOINT = '@Url.Action(Info.API_ENDPOINT)';
-        var DB_NAME = '@Info.DATABASE_NAME';
+        var ENDPOINT = '@Url.Action(Constraints.API_ENDPOINT)';
+        var DB_NAME = '@Constraints.DATABASE_NAME';
     </script>
+
+    <script src="@Url.Content("~/js/Buttons.jsx")"></script>
+    <script src="@Url.Content("~/js/FilterDialog.jsx")"></script>
+    <script src="@Url.Content("~/js/LoginBox.jsx")"></script>
+    <script src="@Url.Content("~/js/ListBox.jsx")"></script>
+    <script src="@Url.Content("~/js/Main.jsx")"></script>
     <script src="@Url.Content("~/js/Home.jsx")"></script>
 </body>
 </html>

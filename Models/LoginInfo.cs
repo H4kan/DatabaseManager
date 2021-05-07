@@ -9,6 +9,8 @@ namespace DatabaseManager.Models
     {
         public string ServerName { get; set; }
 
+        public string DbName { get; set; }
+
         public bool Trusted { get; set; }
 
         public string Login { get; set; }
